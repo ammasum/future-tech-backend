@@ -1,0 +1,40 @@
+{
+  "name": "future-tech-backend",
+  "version": "1.0.0",
+  "description": "Express API starter with TypeScript and Sequelize",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "check": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ammasum/future-tech-backend.git"
+  },
+  "keywords": [
+    "express",
+    "typescript",
+    "sequelize",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ammasum/future-tech-backend/issues"
+  },
+  "homepage": "https://github.com/ammasum/future-tech-backend#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.7.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
