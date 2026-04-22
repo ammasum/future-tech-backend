@@ -10,7 +10,7 @@ const parseNumber = (value: string | undefined, fallback: number): number => {
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
-  port: parseNumber(process.env.PORT, 3000),
+  port: parseNumber(process.env.PORT, 4000),
   dbStorage: process.env.DB_STORAGE ?? "storage/database.sqlite",
   dbLogging: process.env.DB_LOGGING === "true",
 };
