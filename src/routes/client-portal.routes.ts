@@ -3,6 +3,7 @@ import { Op } from "sequelize";
 
 import { hashPasscode, verifyPasscode } from "../lib/passcode";
 import { ClientAccount } from "../models/ClientAccount";
+import { WorkTicket } from "../models/WorkTicket";
 
 const clientPortalRouter = Router();
 
@@ -113,6 +114,49 @@ clientPortalRouter.post("/recover", async (req, res) => {
     data: {
       message:
         "If an account exists for that contact, a recovery workflow can now continue from the backend.",
+    },
+  });
+});
+
+clientPortalRouter.get("/profile/:portalId", async (req, res) => {
+  const portalId = req.params.portalId?.trim();
+
+  if (!portalId) {
+    return res.status(400).json({ message: "portalId is required" });
+  }
+
+  const account = await ClientAccount.findOne({ where: { portalId } });
+
+  if (!account) {
+    return res.status(404).json({ message: "Client account not found" });
+  }
+
+  const tickets = await WorkTicket.findAll({
+    where: { clientName: account.name },
+    order: [["lastUpdatedAt", "DESC"]],
+  });
+
+  return res.json({
+    data: {
+      client: {
+        id: account.portalId,
+        name: account.name,
+        email: account.email,
+        phone: account.phone,
+        company: account.company,
+        memberSince: (account as any).createdAt,
+      },
+      tickets: tickets.map((ticket) => ({
+        ticketId: ticket.ticketId,
+        projectType: ticket.projectType,
+        serviceLane: ticket.serviceLane,
+        location: ticket.location,
+        status: ticket.status,
+        assignedTeam: ticket.assignedTeam,
+        startedAt: ticket.startedAt,
+        updatedAt: ticket.lastUpdatedAt,
+        latestUpdate: ticket.latestUpdate,
+      })),
     },
   });
 });

@@ -55,4 +55,33 @@ siteRouter.get("/equipment", async (_req, res) => {
   });
 });
 
+siteRouter.get("/equipment/:itemId", async (req, res) => {
+  const itemId = req.params.itemId?.trim();
+
+  if (!itemId) {
+    return res.status(400).json({ message: "itemId is required" });
+  }
+
+  const item = await EquipmentItem.findOne({ where: { itemId } });
+
+  if (!item) {
+    return res.status(404).json({ message: "Equipment item not found" });
+  }
+
+  const category = await EquipmentCategory.findByPk(item.categoryId);
+
+  return res.json({
+    data: {
+      id: item.itemId,
+      name: item.name,
+      category: category?.slug ?? "uncategorized",
+      categoryTitle: category?.title ?? "Uncategorized",
+      specSummary: item.specSummary,
+      deploymentFit: item.deploymentFit,
+      imageLabel: item.imageLabel,
+      specs: item.specs,
+    },
+  });
+});
+
 export default siteRouter;
