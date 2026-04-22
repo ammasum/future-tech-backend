@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { Op } from "sequelize";
 
-import { clientPortalAccounts } from "../data/client-portal";
+import { hashPasscode, verifyPasscode } from "../lib/passcode";
+import { ClientAccount } from "../models/ClientAccount";
 
 const clientPortalRouter = Router();
 
-clientPortalRouter.post("/login", (req, res) => {
+clientPortalRouter.post("/login", async (req, res) => {
   const { emailOrPhone, passcode } = req.body as {
     emailOrPhone?: string;
     passcode?: string;
@@ -17,14 +19,16 @@ clientPortalRouter.post("/login", (req, res) => {
   }
 
   const normalizedIdentity = emailOrPhone.trim().toLowerCase();
-  const account = clientPortalAccounts.find((entry) => {
-    return (
-      entry.email.toLowerCase() === normalizedIdentity ||
-      entry.phone.toLowerCase() === normalizedIdentity
-    );
+  const account = await ClientAccount.findOne({
+    where: {
+      [Op.or]: [
+        { email: normalizedIdentity },
+        { phone: emailOrPhone.trim() },
+      ],
+    },
   });
 
-  if (!account || account.passcode !== passcode.trim()) {
+  if (!account || !verifyPasscode(passcode.trim(), account.passcodeHash)) {
     return res.status(401).json({
       message: "Invalid credentials",
     });
@@ -32,7 +36,7 @@ clientPortalRouter.post("/login", (req, res) => {
 
   return res.json({
     data: {
-      id: account.id,
+      id: account.portalId,
       name: account.name,
       email: account.email,
       phone: account.phone,
@@ -41,7 +45,7 @@ clientPortalRouter.post("/login", (req, res) => {
   });
 });
 
-clientPortalRouter.post("/register", (req, res) => {
+clientPortalRouter.post("/register", async (req, res) => {
   const { name, phone, email, passcode } = req.body as {
     name?: string;
     phone?: string;
@@ -58,11 +62,13 @@ clientPortalRouter.post("/register", (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPhone = phone.trim();
 
-  const existingAccount = clientPortalAccounts.find((entry) => {
-    return (
-      entry.email.toLowerCase() === normalizedEmail ||
-      entry.phone === normalizedPhone
-    );
+  const existingAccount = await ClientAccount.findOne({
+    where: {
+      [Op.or]: [
+        { email: normalizedEmail },
+        { phone: normalizedPhone },
+      ],
+    },
   });
 
   if (existingAccount) {
@@ -71,29 +77,28 @@ clientPortalRouter.post("/register", (req, res) => {
     });
   }
 
-  const newAccount = {
-    id: `client-${String(clientPortalAccounts.length + 1).padStart(3, "0")}`,
+  const portalId = `client-${String((await ClientAccount.count()) + 1).padStart(3, "0")}`;
+  const account = await ClientAccount.create({
+    portalId,
     name: name.trim(),
     phone: normalizedPhone,
     email: normalizedEmail,
-    passcode: passcode.trim(),
+    passcodeHash: hashPasscode(passcode.trim()),
     company: "Pending assignment",
-  };
-
-  clientPortalAccounts.push(newAccount);
+  });
 
   return res.status(201).json({
     data: {
-      id: newAccount.id,
-      name: newAccount.name,
-      email: newAccount.email,
-      phone: newAccount.phone,
-      company: newAccount.company,
+      id: account.portalId,
+      name: account.name,
+      email: account.email,
+      phone: account.phone,
+      company: account.company,
     },
   });
 });
 
-clientPortalRouter.post("/recover", (req, res) => {
+clientPortalRouter.post("/recover", async (req, res) => {
   const { emailOrPhone } = req.body as {
     emailOrPhone?: string;
   };

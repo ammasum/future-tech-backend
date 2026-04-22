@@ -1,9 +1,7 @@
 import { Router } from "express";
 
-import {
-  contactInquiries,
-  contactOverview,
-} from "../data/contact-review";
+import { contactOverview } from "../data/contact-review";
+import { ContactInquiry } from "../models/ContactInquiry";
 
 const contactRouter = Router();
 
@@ -13,7 +11,7 @@ contactRouter.get("/overview", (_req, res) => {
   });
 });
 
-contactRouter.post("/inquiries", (req, res) => {
+contactRouter.post("/inquiries", async (req, res) => {
   const { name, email, phone, topic, message } = req.body as {
     name?: string;
     email?: string;
@@ -28,20 +26,22 @@ contactRouter.post("/inquiries", (req, res) => {
     });
   }
 
-  const inquiry = {
-    id: `inq-${String(contactInquiries.length + 1).padStart(4, "0")}`,
+  const inquiryId = `inq-${String((await ContactInquiry.count()) + 1).padStart(4, "0")}`;
+  const inquiry = await ContactInquiry.create({
+    inquiryId,
     name: name.trim(),
     email: email.trim().toLowerCase(),
     phone: phone.trim(),
     topic: topic.trim(),
     message: message.trim(),
-    createdAt: new Date().toISOString(),
-  };
-
-  contactInquiries.push(inquiry);
+    status: "new",
+  });
 
   return res.status(201).json({
-    data: inquiry,
+    data: {
+      id: inquiry.inquiryId,
+      createdAt: inquiry.createdAt,
+    },
   });
 });
 

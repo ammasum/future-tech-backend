@@ -1,9 +1,9 @@
 import { Router } from "express";
 
 import {
-  workTickets,
   workTrackingStatuses,
 } from "../data/work-tracking";
+import { WorkTicket } from "../models/WorkTicket";
 
 const workTrackingRouter = Router();
 
@@ -13,12 +13,12 @@ workTrackingRouter.get("/statuses", (_req, res) => {
   });
 });
 
-workTrackingRouter.get("/:ticketId", (req, res) => {
+workTrackingRouter.get("/:ticketId", async (req, res) => {
   const ticketId = req.params.ticketId?.trim().toUpperCase();
 
-  const ticket = workTickets.find(
-    (entry) => entry.ticketId.toUpperCase() === ticketId,
-  );
+  const ticket = await WorkTicket.findOne({
+    where: { ticketId },
+  });
 
   if (!ticket) {
     return res.status(404).json({
@@ -27,7 +27,19 @@ workTrackingRouter.get("/:ticketId", (req, res) => {
   }
 
   return res.json({
-    data: ticket,
+    data: {
+      ticketId: ticket.ticketId,
+      clientName: ticket.clientName,
+      projectType: ticket.projectType,
+      serviceLane: ticket.serviceLane,
+      location: ticket.location,
+      status: ticket.status,
+      assignedTeam: ticket.assignedTeam,
+      startedAt: ticket.startedAt,
+      updatedAt: ticket.lastUpdatedAt,
+      latestUpdate: ticket.latestUpdate,
+      notes: ticket.notes,
+    },
   });
 });
 
