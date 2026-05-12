@@ -126,33 +126,6 @@ export const siteMeta = {
       ],
     },
     {
-      href: "/login",
-      label: "Login",
-      eyebrow: "Client access",
-      title: "Login Page",
-      description:
-        "The secure entry point for onboarding, client sign-in, and passcode recovery flows.",
-      foundationNote:
-        "The initial pass should stay frontend-only, but the layout must leave room for registration, sign-in, and recovery states.",
-      sections: [
-        {
-          title: "Sign-in form",
-          description:
-            "Passcode-protected client access with simple, trustworthy form presentation.",
-        },
-        {
-          title: "Onboarding form",
-          description:
-            "Collection of name, phone, email, and passcode for new clients.",
-        },
-        {
-          title: "Forgot passcode flow",
-          description:
-            "Recovery path placeholder that can later connect to backend logic.",
-        },
-      ],
-    },
-    {
       href: "/contact",
       label: "Contact & Review",
       eyebrow: "Trust layer",
